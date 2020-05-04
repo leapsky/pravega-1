@@ -201,23 +201,6 @@ public class EventStreamReaderImpl<Type> implements EventStreamReader<Type> {
             log.info("Reader {} completed checkpoint {}", groupState.getReaderId(), atCheckpoint);
             releaseSegmentsIfNeeded(position);
         }
-        String checkpoint = groupState.getCheckpoint();
-        while (checkpoint != null) {
-            log.info("{} at checkpoint {}", this, checkpoint);
-            if (groupState.isCheckpointSilent(checkpoint)) {
-                // Checkpoint the reader immediately with the current position. Checkpoint Event is not generated.
-                groupState.checkpoint(checkpoint, position);
-                if (atCheckpoint != null) {
-                    //In case the silent checkpoint held up releasing segments
-                    releaseSegmentsIfNeeded(position);
-                    atCheckpoint = null;
-                }
-                checkpoint = groupState.getCheckpoint();
-            } else {
-                atCheckpoint = checkpoint;
-                return atCheckpoint;
-            }
-        }
         atCheckpoint = null;
         if (acquireSegmentsIfNeeded(position) || groupState.updateLagIfNeeded(getLag(), position)) {
             waterMarkReaders.forEach((stream, reader) -> {

@@ -13,15 +13,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.pravega.auth.InvalidTokenException;
 import io.pravega.auth.TokenExpiredException;
-<<<<<<< HEAD
 import io.pravega.client.netty.impl.Flow;
 import io.pravega.client.nonetty.impl.TcpClientConnection;
 import io.pravega.client.nonetty.impl.ClientConnection;
-=======
-import io.pravega.client.netty.impl.ClientConnection;
->>>>>>> Remove dependency on ConcurrentSkipListMap
 import io.pravega.client.netty.impl.ConnectionFactory;
-import io.pravega.client.netty.impl.Flow;
 import io.pravega.client.security.auth.DelegationTokenProvider;
 import io.pravega.client.stream.impl.Controller;
 import io.pravega.client.stream.impl.PendingEvent;
@@ -55,6 +50,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;

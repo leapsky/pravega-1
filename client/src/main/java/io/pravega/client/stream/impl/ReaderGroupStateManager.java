@@ -213,13 +213,7 @@ public class ReaderGroupStateManager {
      * the reader with the least assigned to it.
      */
     private boolean doesReaderOwnTooManySegments(ReaderGroupState state) {
-        Map<String, Double> sizesOfAssignemnts = state.getRelativeSizes();
-        Set<Segment> assignedSegments = state.getSegments(readerId);
-        if (sizesOfAssignemnts.isEmpty() || assignedSegments == null || assignedSegments.size() <= 1) {
-            return false;
-        }
-        double min = sizesOfAssignemnts.values().stream().min(Double::compareTo).get();
-        return sizesOfAssignemnts.get(readerId) > min + Math.max(1, state.getNumberOfUnassignedSegments());
+        return false;
     }
 
     /**

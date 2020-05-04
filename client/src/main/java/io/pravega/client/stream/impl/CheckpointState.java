@@ -106,7 +106,7 @@ public class CheckpointState {
     }
     
     private List<String> getCheckpointsForReader(String readerName) {
-        return checkpointIndex.getOrDefault(readerName, Collections.emptyList());
+        return new ArrayList<String>();
     }
     
     private void recomputeCheckpointIndex() {
