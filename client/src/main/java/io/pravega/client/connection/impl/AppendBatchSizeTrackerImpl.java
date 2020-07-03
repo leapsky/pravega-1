@@ -27,26 +27,17 @@ import java.util.function.Supplier;
  * synchronous writers. Otherwise the batch size is set to the amount of data that will be written in the next
  * {@link #MAX_BATCH_TIME_MILLIS} or half the server round trip time (whichever is less)
  */
-public class AppendBatchSizeTrackerImpl implements AppendBatchSizeTracker {
-    private static final double NANOS_PER_MILLI = 1000000;
-    
-    // This must be less than WireCommands.MAX_WIRECOMMAND_SIZE / 2;
-    private static final int MAX_BATCH_SIZE = initializeConstant("PRAVEGA_MAX_BATCH_SIZE",
-                                                                 2 * TcpClientConnection.TCP_BUFFER_SIZE - 1024);
-    private static final int BASE_TIME_NANOS = initializeConstant("PRAVEGA_BATCH_BASE_TIME_NANOS", 500000);
-    private static final int BASE_SIZE = initializeConstant("PRAVEGA_BATCH_BASE_SIZE", 0);
-    private static final double OUTSTANDING_FRACTION = 1.0 / initializeConstant("PRAVEGA_BATCH_OUTSTANDING_DENOMINATOR", 2);
-    
+class AppendBatchSizeTrackerImpl implements AppendBatchSizeTracker {
     private final Supplier<Long> clock;
     private final AtomicLong lastAppendNumber;
     private final AtomicLong lastAppendTime;
     private final AtomicLong lastAckNumber;
-    private final ExponentialMovingAverage eventSize = new ExponentialMovingAverage(1024, 0.01, true);
-    private final ExponentialMovingAverage nanosBetweenAppends = new ExponentialMovingAverage(10 * NANOS_PER_MILLI, 0.001, true);
-    private final ExponentialMovingAverage appendsOutstanding = new ExponentialMovingAverage(20, 0.001, false);
+    private final ExponentialMovingAverage eventSize = new ExponentialMovingAverage(1024, 0.1, true);
+    private final ExponentialMovingAverage millisBetweenAppends = new ExponentialMovingAverage(10, 0.1, false);
+    private final ExponentialMovingAverage appendsOutstanding = new ExponentialMovingAverage(2, 0.05, false);
 
     public AppendBatchSizeTrackerImpl() {
-        clock = System::nanoTime;
+        clock = System::currentTimeMillis;
         lastAppendTime = new AtomicLong(clock.get());
         lastAckNumber = new AtomicLong(0);
         lastAppendNumber = new AtomicLong(0);
@@ -57,7 +48,8 @@ public class AppendBatchSizeTrackerImpl implements AppendBatchSizeTracker {
         long now = Math.max(lastAppendTime.get(), clock.get());
         long last = lastAppendTime.getAndSet(now);
         lastAppendNumber.set(eventNumber);
-        nanosBetweenAppends.addNewSample(now - last);
+        millisBetweenAppends.addNewSample(now - last);
+        appendsOutstanding.addNewSample(eventNumber - lastAckNumber.get());
         eventSize.addNewSample(size);
     }
 
@@ -79,28 +71,15 @@ public class AppendBatchSizeTrackerImpl implements AppendBatchSizeTracker {
         if (numInflight <= 1) {
             return 0;
         }
-        double nanosPerAppend = nanosBetweenAppends.getCurrentValue();
-        double appendsInMaxBatchTime = (MAX_BATCH_TIME_MILLIS * NANOS_PER_MILLI) / nanosPerAppend;
-        double appendsInTime = Math.max(1.0, BASE_TIME_NANOS / nanosPerAppend);
-        double appendsInBatch = MathHelpers.minMax(appendsOutstanding.getCurrentValue() * OUTSTANDING_FRACTION, appendsInTime, appendsInMaxBatchTime);
-        int size = (int) (appendsInBatch * eventSize.getCurrentValue()) + BASE_SIZE;
-        return MathHelpers.minMax(size, 0, MAX_BATCH_SIZE);
+        double appendsInMaxBatch = Math.max(1.0, MAX_BATCH_TIME_MILLIS / millisBetweenAppends.getCurrentValue());
+        double targetAppendsOutstanding = MathHelpers.minMax(appendsOutstanding.getCurrentValue() * 0.5, 1.0,
+                                                             appendsInMaxBatch);
+        return (int) MathHelpers.minMax((long) (targetAppendsOutstanding * eventSize.getCurrentValue()), 0,
+                                        MAX_BATCH_SIZE);
     }
 
     @Override
     public int getBatchTimeout() {
         return MAX_BATCH_TIME_MILLIS;
-    }
-    
-    private static int initializeConstant(String name, int defaultValue) {
-        String val = System.getenv(name);
-        if (val != null) {
-            try {
-                return Integer.parseInt(val);
-            } catch (NumberFormatException e) {
-                //Use default
-            }
-        }
-        return defaultValue;
     }
 }

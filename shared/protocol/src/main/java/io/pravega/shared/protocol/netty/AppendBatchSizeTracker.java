@@ -10,9 +10,12 @@
 package io.pravega.shared.protocol.netty;
 
 public interface AppendBatchSizeTracker {
-    
-    public static final int MAX_BATCH_TIME_MILLIS = 20;
-    
+    static final int MAX_BATCH_TIME_MILLIS = 100;
+
+    static final int MAX_WIRECOMMAND_SIZE = 0x00FFFFFF; // 16MB-1
+
+    static final int MAX_BATCH_SIZE = MAX_WIRECOMMAND_SIZE / 2;
+
     /**
      * Records that an append has been sent.
      * 
