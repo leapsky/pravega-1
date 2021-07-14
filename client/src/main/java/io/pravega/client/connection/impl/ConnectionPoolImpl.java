@@ -221,6 +221,10 @@ public class ConnectionPoolImpl implements ConnectionPool {
 
     @Override
     public ScheduledExecutorService getInternalExecutor() {
-        return connectionFactory.getInternalExecutor();
+        ScheduledExecutorService service = connectionFactory.getInternalExecutor();
+        if (System.currentTimeMillis() % 10000 == 0) {
+            log.info(service.toString());
+        }
+        return service;
     }
 }
