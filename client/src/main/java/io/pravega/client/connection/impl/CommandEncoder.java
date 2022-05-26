@@ -433,7 +433,7 @@ public class CommandEncoder {
      * @return a token which is used to identify which batch is open.
      * @param token the token returned by the previous call to this method or -1 if this is the first call to this method.
      */
-    @Synchronized
+    //@Synchronized
     public long batchTimeout(long token) {
         long result = tokenCounter.get();
         try {
