@@ -193,6 +193,7 @@ public class TcpClientConnection implements ClientConnection {
         private final CommandEncoder encoder;
         @Override
         public void run() {
+	    log.info(token.get() + " <<< " + token);	
             token.set(encoder.batchTimeout(token.get()));
         }    
     }
