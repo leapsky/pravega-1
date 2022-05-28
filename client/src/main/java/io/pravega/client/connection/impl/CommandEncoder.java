@@ -254,7 +254,7 @@ public class CommandEncoder {
                 if (bytesLeftInBlock > data.readableBytes()) {
                     continueAppend(data);
                 } else {
-	            log.info(bytesLeftInBlock + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + data.readableBytes());
+	            //log.info(bytesLeftInBlock + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + data.readableBytes());
                     ByteBuf dataInsideBlock = data.readSlice(bytesLeftInBlock);
                     completeAppend(dataInsideBlock, data);
                     flushAllToBuffer();

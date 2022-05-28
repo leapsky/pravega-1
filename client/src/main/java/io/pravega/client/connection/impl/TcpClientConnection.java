@@ -66,7 +66,7 @@ import static io.pravega.shared.protocol.netty.AppendBatchSizeTracker.MAX_BATCH_
 public class TcpClientConnection implements ClientConnection {
 
     static final int CONNECTION_TIMEOUT = 5000;
-    static final int TCP_BUFFER_SIZE = 256 * 1024;
+    static final int TCP_BUFFER_SIZE = 512 * 1024;
     static final int SOCKET_TIMEOUT_MS = 3 * 60 * 1000;
     
     private final Socket socket;
@@ -193,9 +193,9 @@ public class TcpClientConnection implements ClientConnection {
         private final CommandEncoder encoder;
         @Override
         public void run() {
-            if (token.get() > 60000) {	
-	       log.info(token.get() + " <<< !!!!!!!");
-	    }
+            //if (token.get() > 60000) {	
+	    //   log.info(token.get() + " <<< !!!!!!!");
+	    //}
             token.set(encoder.batchTimeout(token.get()));
         }    
     }
