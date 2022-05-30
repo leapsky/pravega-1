@@ -254,12 +254,12 @@ public class ThreadPoolScheduledExecutorService extends AbstractExecutorService 
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-	log.info("delay: " + delay);       
+	if (delay > 20) log.info("delay: " + delay);       
 
 	ScheduledRunnable<V> task = new ScheduledRunnable<>(callable, delay, unit);
         runner.execute(task);
 
-	log.info("done1");
+	if (delay > 20) log.info("done1");
 
         return new CancelableFuture<>(task);
     }
