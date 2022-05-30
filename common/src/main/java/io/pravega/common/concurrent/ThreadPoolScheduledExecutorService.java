@@ -192,6 +192,7 @@ public class ThreadPoolScheduledExecutorService extends AbstractExecutorService 
             try {
                 future.complete(task.call());
             } catch (Throwable e) {
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + e);    
                 future.completeExceptionally(e);
             }
         }
@@ -245,6 +246,7 @@ public class ThreadPoolScheduledExecutorService extends AbstractExecutorService 
 
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+        
         ScheduledRunnable<?> task = new ScheduledRunnable<>(Executors.callable(command), delay, unit);
         runner.execute(task);
         return new CancelableFuture<>(task);
@@ -252,16 +254,25 @@ public class ThreadPoolScheduledExecutorService extends AbstractExecutorService 
 
     @Override
     public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
-        ScheduledRunnable<V> task = new ScheduledRunnable<>(callable, delay, unit);
+	log.info("delay: " + delay);       
+
+	ScheduledRunnable<V> task = new ScheduledRunnable<>(callable, delay, unit);
         runner.execute(task);
+
+	log.info("done1");
+
         return new CancelableFuture<>(task);
     }
 
     @Override
     public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+        log.info(initialDelay + " period: " + period + " command: " + command);
+
         FixedRateLoop loop = new FixedRateLoop(command, period, unit);
         ScheduledRunnable<?> task = new ScheduledRunnable<>(loop, initialDelay, unit);
         runner.execute(task);
+
+	log.info("done2");
         return loop;
     }
 
