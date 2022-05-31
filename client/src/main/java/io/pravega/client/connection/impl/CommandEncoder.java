@@ -15,6 +15,7 @@
  */
 package io.pravega.client.connection.impl;
 
+import java.util.concurrent.*;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
@@ -254,6 +255,7 @@ public class CommandEncoder {
                 if (bytesLeftInBlock > data.readableBytes()) {
                     continueAppend(data);
                 } else {
+	            //log.info(bytesLeftInBlock + " >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " + data.readableBytes());
                     ByteBuf dataInsideBlock = data.readSlice(bytesLeftInBlock);
                     completeAppend(dataInsideBlock, data);
                     flushAllToBuffer();
@@ -267,8 +269,29 @@ public class CommandEncoder {
     
     @GuardedBy("$lock")
     private void flushBuffer() throws IOException {
-        buffer.getBytes(buffer.readerIndex(), output, buffer.readableBytes());
-        buffer.clear();
+	ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        Future<Void> future = executor.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                buffer.getBytes(buffer.readerIndex(), output, buffer.readableBytes());
+                buffer.clear();
+                return null;
+            }
+        });
+
+        try {
+            System.out.println("Started..");
+            future.get(3, TimeUnit.SECONDS);
+            System.out.println("Finished!");
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            System.out.println("Terminated!");
+        } catch (Exception e) {
+            //
+        } finally {
+            executor.shutdownNow();
+        }
     }
     
     @VisibleForTesting
