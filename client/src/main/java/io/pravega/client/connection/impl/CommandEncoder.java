@@ -281,12 +281,10 @@ public class CommandEncoder {
         });
 
         try {
-            System.out.println("Started..");
-            future.get(3, TimeUnit.SECONDS);
-            System.out.println("Finished!");
+            future.get(5, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
-            System.out.println("Terminated!");
+            log.info("Terminated! <<<<<<<<<<<<<<");
         } catch (Exception e) {
             //
         } finally {
