@@ -281,7 +281,7 @@ public class CommandEncoder {
         });
 
         try {
-            future.get(5, TimeUnit.SECONDS);
+            future.get(1, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             future.cancel(true);
             log.info("Terminated! <<<<<<<<<<<<<<");
