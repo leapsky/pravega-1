@@ -275,7 +275,6 @@ public class CommandEncoder {
             @Override
             public Void call() throws Exception {
                 buffer.getBytes(buffer.readerIndex(), output, buffer.readableBytes());
-                buffer.clear();
                 return null;
             }
         });
@@ -288,6 +287,7 @@ public class CommandEncoder {
         } catch (Exception e) {
             //
         } finally {
+	    buffer.clear();	
             executor.shutdownNow();
         }
     }
